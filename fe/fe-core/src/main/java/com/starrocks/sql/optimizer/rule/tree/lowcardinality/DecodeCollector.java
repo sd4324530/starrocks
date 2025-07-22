@@ -24,6 +24,11 @@ import com.starrocks.catalog.Column;
 import com.starrocks.catalog.ColumnAccessPath;
 import com.starrocks.catalog.FunctionSet;
 import com.starrocks.catalog.OlapTable;
+<<<<<<< HEAD
+=======
+import com.starrocks.catalog.PhysicalPartition;
+import com.starrocks.catalog.Table;
+>>>>>>> 78558bcc07 ([BugFix] Fix dictionary inconsistency in shared-data mode (#61006))
 import com.starrocks.catalog.Type;
 import com.starrocks.common.FeConstants;
 import com.starrocks.qe.SessionVariable;
@@ -591,8 +596,8 @@ public class DecodeCollector extends OptExpressionVisitor<DecodeInfo, DecodeInfo
     public DecodeInfo visitPhysicalOlapScan(OptExpression optExpression, DecodeInfo context) {
         PhysicalOlapScanOperator scan = optExpression.getOp().cast();
         OlapTable table = (OlapTable) scan.getTable();
-        long version = table.getPartitions().stream().map(p -> p.getDefaultPhysicalPartition().getVisibleVersionTime())
-                .max(Long::compareTo).orElse(0L);
+        long version = table.getPartitions().stream().flatMap(p -> p.getSubPartitions().stream()).map(
+                PhysicalPartition::getVisibleVersionTime).max(Long::compareTo).orElse(0L);
 
         if (table.hasForbiddenGlobalDict()) {
             return DecodeInfo.EMPTY;
